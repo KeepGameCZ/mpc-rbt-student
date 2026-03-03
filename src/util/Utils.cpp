@@ -35,8 +35,6 @@ std::optional<Config> Config::fromArgs(int argc, char ** argv)
 
 void from_json(const nlohmann::json & j, Config::Sender & c)
 {
-  UNFINISHED(__PRETTY_FUNCTION__);
-
   j.at("localPort").get_to(c.localPort);
 }
 
@@ -53,18 +51,26 @@ void from_json(const nlohmann::json & j, Config & c)
 
 void Message::to_json(nlohmann::json & j, const Message & m)
 {
-  UNFINISHED(__PRETTY_FUNCTION__);
+  
 
   j = nlohmann::json{
     {"timestamp", m.timestamp},
   };
+
+  j["x"] = m.x;
+  j["y"] = m.y;
+  j["z"] = m.z;
+
 }
 
 void Message::from_json(const nlohmann::json & j, Message & m)
 {
-  UNFINISHED(__PRETTY_FUNCTION__);
-
+ 
   j.at("timestamp").get_to(m.timestamp);
+
+  m.x = j["x"];
+  m.y = j["y"];
+  m.z = j["z"];
 }
 
 bool Message::serialize(Socket::IPFrame & f, const Message & m)

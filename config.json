@@ -1,11 +1,12 @@
 {
   "sender": {
-    "localPort": 0,
+    "localPort": 10001,
     "remotePort": 0,
-    "remoteAddress": "",
-    "sendingPeriodMillis": 0
+    "remoteAddress": "127.0.0.1",
+    "sendingPeriodMillis": 10002
   },
   "receiver": {
-    "localPort": 0
+    "localPort": 10002,
+    "address": "127.0.0.1"
   }
 }

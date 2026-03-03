@@ -15,12 +15,7 @@ public:
     create();
     configure();
     bind();
-    callback = [this] { 
-		receive(IPFrame & frame);
-
- 		deserialize(Socket::IPFrame & f, Message & m);
-		Utils::configureLogging();
-}
+    callback = std::bind(&Receiver::Node::onDataReceived, this, std::placeholders::_1);
   }
 
   void run();
@@ -50,6 +45,3 @@ public:
 }  // namespace Receiver
 
 #endif  // COMMUNICATION_EXAMPLE_RECEIVER_H
-
-
-˛˛
