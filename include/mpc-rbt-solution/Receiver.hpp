@@ -12,7 +12,15 @@ public:
   explicit Node(const Utils::Config::Receiver & receiverConfig)
   : Socket::UDP(receiverConfig.localPort), config(receiverConfig)
   {
-    UNIMPLEMENTED(__PRETTY_FUNCTION__);
+    create();
+    configure();
+    bind();
+    callback = [this] { 
+		receive(IPFrame & frame);
+
+ 		deserialize(Socket::IPFrame & f, Message & m);
+		Utils::configureLogging();
+}
   }
 
   void run();
@@ -42,3 +50,6 @@ public:
 }  // namespace Receiver
 
 #endif  // COMMUNICATION_EXAMPLE_RECEIVER_H
+
+
+˛˛
