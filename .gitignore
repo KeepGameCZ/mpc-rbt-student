@@ -1,3 +1,6 @@
 build/
 install/
 log/
+mer_u/
+*.db3
+*.mcap
