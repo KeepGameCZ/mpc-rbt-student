@@ -31,6 +31,7 @@ private:
 
     nav_msgs::msg::Odometry odometry_;
     rclcpp::Time last_time_;
+    tf2::Quaternion tf_quat;
 };
 
 #endif // LOCALIZATION_HPP

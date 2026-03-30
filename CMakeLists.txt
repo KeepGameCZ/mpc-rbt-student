@@ -20,6 +20,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(mpc_rbt_simulator REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 # Define include directories for the compiler
 include_directories(PUBLIC
@@ -37,9 +38,14 @@ set(dependencies
         tf2_ros
         tf2_geometry_msgs
         mpc_rbt_simulator
+        nav_msgs
 )
 
-add_library(${PROJECT_NAME} SHARED src/KeyboardControl.cpp)
+add_library(${PROJECT_NAME} SHARED 
+        src/KeyboardControl.cpp
+        src/Localization.cpp
+        src/Planning.cpp
+        )
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 install(TARGETS ${PROJECT_NAME}
@@ -58,10 +64,16 @@ install(TARGETS keyboard_control DESTINATION lib/${PROJECT_NAME})
 # * * * * * * * * * * * * * * * * *
 # *      Lab 05_localization
 # * * * * * * * * * * * * * * * * *
+add_executable(localization_node src/localization_node.cpp)
+target_link_libraries(localization_node ${PROJECT_NAME})
+install(TARGETS localization_node DESTINATION lib/${PROJECT_NAME})
 
 # * * * * * * * * * * * * * * * * *
 # *      Lab 06_planning
 # * * * * * * * * * * * * * * * * *
+add_executable(planning_node src/planning_node.cpp)
+target_link_libraries(planning_node ${PROJECT_NAME})
+install(TARGETS planning_node DESTINATION lib/${PROJECT_NAME})
 
 # * * * * * * * * * * * * * * * * *
 # *       Lab 07_control
