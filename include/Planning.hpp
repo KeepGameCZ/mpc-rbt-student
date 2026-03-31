@@ -26,8 +26,11 @@ public:
 private:
     // Parameters
     // TO DO
+    /*geometry_msgs::msg::Pose current_robot_pose_;
+    bool robot_pose_received_ = false;
 
     // Callbacks
+    void PlanningNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);*/
     void mapCallback(rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture future);
     void planPath(const std::shared_ptr<nav_msgs::srv::GetPlan::Request> request, std::shared_ptr<nav_msgs::srv::GetPlan::Response> response);
 

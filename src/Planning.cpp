@@ -1,10 +1,11 @@
 #include "Planning.hpp"
+#include "mpc_rbt_simulator/RobotConfig.hpp"
 
 PlanningNode::PlanningNode() :
     rclcpp::Node("planning_node") {
 
         // Client for map
-        map_client_ = this->create_client<nav_msgs::srv::GetMap>("/map");
+        map_client_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
 
         // Service for path
         plan_service_ = this->create_service<nav_msgs::srv::GetPlan>(
@@ -26,6 +27,13 @@ PlanningNode::PlanningNode() :
         RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
         }
 
+        /*// Subscriber for RBT positon
+        odometry_subscriber = this->create_subscription<nav_msgs::msg::Odometry>(
+            "odom",
+            10,
+            std::bind(&PlanningNode::odomCallback, this, std::placeholders::_1));
+        RCLCPP_INFO(this->get_logger(), "#RBT positon loaded#");*/
+
         // Request map
         auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
         auto future = map_client_->async_send_request(request, std::bind(&PlanningNode::mapCallback, this, std::placeholders::_1));
@@ -33,40 +41,70 @@ PlanningNode::PlanningNode() :
         RCLCPP_INFO(get_logger(), "Trying to fetch map...");
     }
 
+/*void PlanningNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) { //callback pro cteni pozice RBT
+    current_robot_pose_ = msg->pose.pose;
+    robot_pose_received_ = true; // pojistka ze pozice RBT prisla
+}*/
+
 void PlanningNode::mapCallback(rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture future) {
     auto response = future.get();
     if (response) {
         map_ = response->map;
-        RCLCPP_INFO(this->get_logger(), "Mapa nactena! Sirka: %d, Vyska: %d", map_.info.width, map_.info.height);
+        RCLCPP_INFO(this->get_logger(), "Map loaded! Width: %d, Height: %d", map_.info.width, map_.info.height);
+    
+        dilateMap();
     }
     
 }
 
 void PlanningNode::planPath(const std::shared_ptr<nav_msgs::srv::GetPlan::Request> request, std::shared_ptr<nav_msgs::srv::GetPlan::Response> response) {
-    // add code here
+    geometry_msgs::msg::PoseStamped start_pose;
+    /*start_pose.header.frame_id = "map";
+    start_pose.header.stamp = this->get_clock()->now();
 
-    // ********
-    // * Help *
-    // ********
-    /*
-    aStar(request->start, request->goal);
+    if (robot_pose_received_) {
+        start_pose.pose = current_robot_pose_;
+    } else {*/
+        start_pose = request->start;
+    //}
+    
+    aStar(start_pose, request->goal);
     smoothPath();
 
     path_pub_->publish(path_);
-    */
+    response->plan = path_;
+
 }
 
 void PlanningNode::dilateMap() {
-    // add code here
-
-    // ********
-    // * Help *
-    // ********
-    /*
     nav_msgs::msg::OccupancyGrid dilatedMap = map_;
-    ... processing ...
+    int dilate_Size = 4 + (robot_config::HALF_DISTANCE_BETWEEN_WHEELS / map_.info.resolution);
+    RCLCPP_INFO(get_logger(), "Dilatation radius %d", dilate_Size);
+    int map_width = map_.info.width;
+    int map_height = map_.info.height;
+
+    for (int y = 0; y < map_height; y++) {
+        for (int x = 0; x < map_width; x++) {
+            int index = y * map_width + x;
+            if(map_.data[index] > 50) {
+                for (int dy = -dilate_Size; dy <= dilate_Size; dy++) {
+                    for (int dx = -dilate_Size; dx <= dilate_Size; dx++) {
+                        if (dx*dx + dy*dy <= dilate_Size*dilate_Size) { //osetreni ze bude "kruh"
+                            int nx = x + dx;
+                            int ny = y + dy;
+
+                            if (nx >= 0 && nx < map_width && ny >= 0 && ny < map_height) {
+                                int surr_index = ny * map_width + nx;
+                                dilatedMap.data[surr_index] = 100;
+                            }
+                        }
+                    }                    
+                }
+            }
+        }        
+    }
     map_ = dilatedMap;
-    */
+    RCLCPP_INFO(get_logger(), "Map Dilated!");
 }
 
 void PlanningNode::aStar(const geometry_msgs::msg::PoseStamped &start, const geometry_msgs::msg::PoseStamped &goal) {
@@ -103,7 +141,7 @@ void PlanningNode::aStar(const geometry_msgs::msg::PoseStamped &start, const geo
         closedList[current_index] = true;
 
         if (current->x == goal_x && current->y == goal_y) {
-            RCLCPP_INFO(get_logger(), "Cesta nalezena!");
+            RCLCPP_INFO(get_logger(), "Path Founded! :D");
 
             path_.poses.clear(); // cistka stare cesty
             path_.header.frame_id = "map";
@@ -177,17 +215,19 @@ void PlanningNode::aStar(const geometry_msgs::msg::PoseStamped &start, const geo
 }
 
 void PlanningNode::smoothPath() {
-    // add code here
-
-    // ********
-    // * Help *
-    // ********
-    /*
-    std::vector<geometry_msgs::msg::PoseStamped> newPath = path_.poses;
-    ... processing ...
-    path_.poses = newPath;
-    */
-}
+    if (path_.poses.size() < 3)
+        return;
+    
+    int iters = 50;
+    for (int i = 0; i < iters; i++) {
+        std::vector<geometry_msgs::msg::PoseStamped> newPath = path_.poses;
+        for (size_t p = 1; p < (path_.poses.size() - 1); p++) {
+            newPath[p].pose.position.x = ((path_.poses[p-1].pose.position.x + path_.poses[p].pose.position.x + path_.poses[p+1].pose.position.x) / 3.0);
+            newPath[p].pose.position.y = ((path_.poses[p-1].pose.position.y + path_.poses[p].pose.position.y + path_.poses[p+1].pose.position.y) / 3.0);
+        }
+        path_.poses = newPath;
+    }
+} 
 
 Cell::Cell(int c, int r) {
     this->x = c;

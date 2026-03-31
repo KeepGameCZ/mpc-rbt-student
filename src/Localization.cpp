@@ -9,19 +9,15 @@ LocalizationNode::LocalizationNode() :
     odometry_.header.frame_id = "map";
     odometry_.child_frame_id = "base_link";
     
-    // add code here
+    // Subscriber for joint_states
     joint_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
         "/joint_states",
         10,
         std::bind(&LocalizationNode::jointCallback, this, std::placeholders::_1)
     );
 
-    // Subscriber for joint_states
-    // add code here
-
-    odometry_publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
     // Publisher for odometry
-    // add code here
+    odometry_publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
 
     // tf_briadcaster 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -30,12 +26,6 @@ LocalizationNode::LocalizationNode() :
 }
 
 void LocalizationNode::jointCallback(const sensor_msgs::msg::JointState & msg) {
-    // add code here
-
-    // ********
-    // * Help *
-    // ********
-    
     auto current_time = this->get_clock()->now();
     double dt = (current_time - last_time_).seconds();
 
@@ -86,11 +76,9 @@ void LocalizationNode::updateOdometry(double left_wheel_vel, double right_wheel_
     odometry_.twist.twist.angular.x = 0.0;
     odometry_.twist.twist.angular.y = 0.0;
     odometry_.twist.twist.angular.z = angular;
-
 }
 
 void LocalizationNode::publishOdometry() {
-    // add code here
     odometry_.header.stamp = this->get_clock()->now();
 
     odometry_.header.frame_id = "odom";
@@ -100,7 +88,6 @@ void LocalizationNode::publishOdometry() {
 }
 
 void LocalizationNode::publishTransform() {
-    // add code here
     geometry_msgs::msg::TransformStamped t;
 
     t.header.stamp = this->get_clock()->now();
@@ -113,8 +100,5 @@ void LocalizationNode::publishTransform() {
 
     t.transform.rotation = odometry_.pose.pose.orientation;
 
-    // ********
-    // * Help *
-    // ********
     tf_broadcaster_->sendTransform(t);
 }
