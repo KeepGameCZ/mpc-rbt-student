@@ -27,12 +27,13 @@ PlanningNode::PlanningNode() :
         RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
         }
 
-        /*// Subscriber for RBT positon
-        odometry_subscriber = this->create_subscription<nav_msgs::msg::Odometry>(
+        // Subscriber for RBT positon
+        odometry_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "odom",
             10,
             std::bind(&PlanningNode::odomCallback, this, std::placeholders::_1));
-        RCLCPP_INFO(this->get_logger(), "#RBT positon loaded#");*/
+        RCLCPP_INFO(this->get_logger(), "#RBT positon loaded#");
+        
 
         // Request map
         auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
@@ -41,10 +42,10 @@ PlanningNode::PlanningNode() :
         RCLCPP_INFO(get_logger(), "Trying to fetch map...");
     }
 
-/*void PlanningNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) { //callback pro cteni pozice RBT
-    current_robot_pose_ = msg->pose.pose;
+void PlanningNode::odomCallback(const nav_msgs::msg::Odometry &odometry_subscriber_) { //callback pro cteni pozice RBT
+    current_robot_pose_ = odometry_subscriber_.pose.pose;
     robot_pose_received_ = true; // pojistka ze pozice RBT prisla
-}*/
+}
 
 void PlanningNode::mapCallback(rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture future) {
     auto response = future.get();
@@ -59,26 +60,25 @@ void PlanningNode::mapCallback(rclcpp::Client<nav_msgs::srv::GetMap>::SharedFutu
 
 void PlanningNode::planPath(const std::shared_ptr<nav_msgs::srv::GetPlan::Request> request, std::shared_ptr<nav_msgs::srv::GetPlan::Response> response) {
     geometry_msgs::msg::PoseStamped start_pose;
-    /*start_pose.header.frame_id = "map";
+    start_pose.header.frame_id = "map";
     start_pose.header.stamp = this->get_clock()->now();
 
     if (robot_pose_received_) {
         start_pose.pose = current_robot_pose_;
-    } else {*/
+        start_pose.pose.position.x += -0.5;
+    } else {
         start_pose = request->start;
-    //}
+    }
     
     aStar(start_pose, request->goal);
     smoothPath();
-
     path_pub_->publish(path_);
     response->plan = path_;
-
 }
 
 void PlanningNode::dilateMap() {
     nav_msgs::msg::OccupancyGrid dilatedMap = map_;
-    int dilate_Size = 4 + (robot_config::HALF_DISTANCE_BETWEEN_WHEELS / map_.info.resolution);
+    int dilate_Size = 8 + (robot_config::HALF_DISTANCE_BETWEEN_WHEELS / map_.info.resolution);
     RCLCPP_INFO(get_logger(), "Dilatation radius %d", dilate_Size);
     int map_width = map_.info.width;
     int map_height = map_.info.height;

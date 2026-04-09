@@ -41,11 +41,7 @@ void LocalizationNode::jointCallback(const sensor_msgs::msg::JointState & msg) {
 }
 
 void LocalizationNode::updateOdometry(double left_wheel_vel, double right_wheel_vel, double dt) {
-    // add code here
-    
-    // ********
-    // * Help *
-    // ********
+ 
     double right_wheel_speed = robot_config::WHEEL_RADIUS * right_wheel_vel;
     double left_wheel_speed = robot_config::WHEEL_RADIUS * left_wheel_vel;
     

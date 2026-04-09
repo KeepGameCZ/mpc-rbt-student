@@ -15,6 +15,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "nav_msgs/srv/get_plan.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "geometry_msgs/msg/twist.hpp" // Aby věděl, co je to Twist
 
 class MotionControlNode : public rclcpp::Node {
     public:
@@ -22,7 +23,10 @@ class MotionControlNode : public rclcpp::Node {
     
     private:
         // Parameters
-        // TO DO
+        double v_max = 0.2; // max = 10,1523rad/s * 0.0985m = 1.0m/s
+        double P = 0.7; // Kp P-regulatoru
+        double thresh = 0.33;
+        bool obstacle_detected_ = false;
 
         // Methods
         void checkCollision();

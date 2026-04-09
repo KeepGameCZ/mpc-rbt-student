@@ -9,6 +9,7 @@
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "nav_msgs/srv/get_map.hpp"
 #include "nav_msgs/srv/get_plan.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 // A-star cell structure
 struct Cell {
@@ -25,12 +26,11 @@ public:
 
 private:
     // Parameters
-    // TO DO
-    /*geometry_msgs::msg::Pose current_robot_pose_;
+    geometry_msgs::msg::Pose current_robot_pose_;
     bool robot_pose_received_ = false;
 
     // Callbacks
-    void PlanningNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);*/
+    void odomCallback(const nav_msgs::msg::Odometry &odometry_subscriber_);
     void mapCallback(rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture future);
     void planPath(const std::shared_ptr<nav_msgs::srv::GetPlan::Request> request, std::shared_ptr<nav_msgs::srv::GetPlan::Response> response);
 
@@ -42,6 +42,9 @@ private:
 
     // Publishers
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+
+    // Subscribers
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscriber_;
 
     // Methods
     void dilateMap();
