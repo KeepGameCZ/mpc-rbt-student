@@ -55,6 +55,25 @@ def generate_launch_description():
         output='screen'
     )
 
+    warehouse_manager = Node(
+    package='mpc_rbt_student',
+    executable='warehouse_manager',
+    name='warehouse_manager',
+    output='screen',
+    parameters=[{'use_sim_time': True}]
+    )
+
+    bt_server = Node(
+    package='mpc_rbt_student',
+    executable='bt_server',
+    name='bt_server',
+    output='screen',
+    parameters=[
+        {'use_sim_time': True},
+        os.path.join(package_dir, 'config', 'bt_server.yaml')
+    ]
+    )  
+
     return LaunchDescription([
-        localization_cmd, rviz_cmd, static_tf_cmd, planning_cmd, motion_control_node
+        localization_cmd, rviz_cmd, static_tf_cmd, planning_cmd, motion_control_node, warehouse_manager, bt_server
     ])
