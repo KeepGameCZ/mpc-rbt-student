@@ -30,7 +30,6 @@ void LocalizationNode::jointCallback(const sensor_msgs::msg::JointState & msg) {
     double dt = (current_time - last_time_).seconds();
 
     //if(dt > 0.5) dt = 0.0;
-
     
     updateOdometry(msg.velocity[0], msg.velocity[1], dt);
     publishOdometry();
