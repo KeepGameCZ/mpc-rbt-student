@@ -35,18 +35,18 @@ public:
     {
         if (wr.code == rclcpp_action::ResultCode::SUCCEEDED)
             return BT::NodeStatus::SUCCESS;
+        return BT::NodeStatus::FAILURE;
     }
 
     BT::NodeStatus onFailure(BT::ActionNodeErrorCode error) override
     {
-        if (wr.code == rclcpp_action::ResultCode::onFailure())
-            return BT::NodeStatus::FAILURE;
+        RCLCPP_ERROR(logger(), "ConfirmLoadingService failed: %d", static_cast<int>(error));
+        return BT::NodeStatus::FAILURE;
     }
 
     BT::NodeStatus onFeedback(const std::shared_ptr<const Feedback> /*feedback*/) override
     {
-        if (wr.code == rclcpp_action::ResultCode::onFeedback())
-            return BT::NodeStatus::RUNNING;
+        return BT::NodeStatus::RUNNING;
     }
 };
 

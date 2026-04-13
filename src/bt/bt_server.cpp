@@ -7,7 +7,7 @@ public:
         : TreeExecutionServer(options) {}
 
     void onTreeCreated(BT::Tree& tree) override {
-        RCLCPP_INFO(this->get_logger(), "Behavior Tree created");
+        BT::StdCoutLogger logger_cout(tree);
     }
 };
 

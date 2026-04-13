@@ -30,8 +30,8 @@ public:
             return BT::NodeStatus::FAILURE;
         setOutput("manipulator_id", response->message);
         return BT::NodeStatus::SUCCESS;
-}
     }
+    
 
     BT::NodeStatus onFailure(BT::ServiceNodeErrorCode error) override
     {
