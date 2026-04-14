@@ -31,6 +31,8 @@ public:
         pose_table_["C2"] = {-2.5, -1.5};
         pose_table_["D1"] = {-4.5, 0.5};
         pose_table_["D2"] = {-4.5, -1.5};
+        // pozice home
+        pose_table_["Home"] = {-0.5, 0.0};
     }
 
     static BT::PortsList providedPorts()
